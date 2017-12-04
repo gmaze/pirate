@@ -4,10 +4,12 @@
 This is a repo with codes for my contribution to the PIRATE project (OST-ST, 2017-2021) on work package entitled:
 *Which observations/locations/timescales are most affected by Low-Frequency Chaotic Intrinsic Variability ?*
 
+## Content
 ``analysis`` contains example of scripts to analyse the OCCIPUT data.
 
 ``src`` contains the ``pirate`` python package to be imported by your scripts.
 
+## Usage
 Create a dataset where we aggregate all members for a small region and a given month and plot some profile ensemble statistics:
 ```python
 import os, glob
@@ -27,3 +29,11 @@ pr.plot.ensemble_profiles(ds, i_obs, vnames='POTM')
 pr.plot.ensemble_profiles(ds, i_obs, vnames=['POTM', 'PSAL'])
 pr.plot.ensemble_profile_pdf(ds, i_obs, N=15, vname="POTM", obscolor='r')
 ```
+
+This will create something like:
+![Local PDF](/analysis/fig2.png?raw=true "Ensemble PDF")
+
+## Sample data
+One sample of data can be downloaded from here:
+
+https://storage.googleapis.com/pirate_data/ENS/y2014m06/ORCA025.L75-OCCITENS.y2014m06_EDWregion.nc
