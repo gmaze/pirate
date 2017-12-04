@@ -1,14 +1,66 @@
 # -*coding: UTF-8 -*-
 __author__ = 'gmaze@ifremer.fr'
 
-import pirate as pr
+import matplotlib.pyplot as plt
 import numpy as np
-import xarray as xr
 import pandas as pd
 import seaborn as sns
-import matplotlib.pyplot as plt
 
-def ensemble_profiles(dsub, i_obs, vname = "POTM"):
+import pirate as pr
+
+
+def ensemble_profiles(dsub, i_obs, vnames = "POTM"):
+    """Plot ensemble profiles superimposed with observation profile
+        vname = "POTM"
+        vname = "PSAL"
+    """
+    # WMO of the platform:
+    wmo = np.asmatrix(dsub['STATION_IDENTIFIER'].isel(N_OBS=i_obs).values)[0, 0].strip()
+    # Datetime of the measurement:
+    jd = np.asmatrix(dsub['JULD'].isel(N_OBS=i_obs).values)[0, 0]
+    ts = pd.Timestamp('1950-01-01') + pd.Timedelta(days=jd)
+    # ts.to_pydatetime().strftime("%Y%m%d%H%M%S")
+
+    if len(vnames) == 2:
+        fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(10,7), sharey=True)
+    else:
+        vnames = [vnames]
+        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(5,7))
+        ax = np.array([ax])
+
+    # plt.figure(dpi=100)
+    sns.set(style="whitegrid")
+    N = len(dsub.N_MEMBER)
+
+    for vname, iv in zip(vnames, range(len(vnames))):
+        vname_ens = ("%s_Hx") % (vname)
+        vname_obs = ("%s_OBS") % (vname)
+
+        y = dsub['DEPTH'].isel(N_OBS=i_obs)
+        #     x_obs = dsub['PSAL_OBS'].isel(member=0).isel(N_OBS=i_obs)
+        x_obs = dsub[vname_obs].isel(N_MEMBER=0).isel(N_OBS=i_obs)
+        #     x_mod = dsub['PSAL_Hx'].isel(N_OBS=i_obs)
+        x_mod = dsub[vname_ens].isel(N_OBS=i_obs)
+
+        for member in np.arange(N):
+            #     print dsub['PSAL_LEVEL_QC'].sel(member=member).sel(N_OBS=i_obs).values
+            #         plt.plot(x_mod.sel(member=member), y, 'r', linewidth=1)
+            ax[iv].plot(x_mod.sel(N_MEMBER=member), y, '0.8', linewidth=1)
+        hm, = ax[iv].plot(x_mod.mean('N_MEMBER'), y, 'k', label='Model Ensemble mean')
+        ax[iv].plot(x_mod.mean('N_MEMBER') - x_mod.std('N_MEMBER'), y, 'k--')
+        ax[iv].plot(x_mod.mean('N_MEMBER') + x_mod.std('N_MEMBER'), y, 'k--')
+        ho, = ax[iv].plot(x_obs, y, 'r', label='Observation')
+        # ax.legend([hm, ho], loc=4)
+        ax[iv].set_xlabel(("%s [%s]")%(dsub[vname_obs].attrs['long_name'],dsub[vname_obs].attrs['units']))
+        ax[iv].set_xlabel(("[%s]")%(dsub[vname_obs].attrs['units']))
+        ax[iv].set_ylabel('Depth (m)')
+        ax[iv].set_title(dsub[vname_obs].attrs['long_name'])
+
+    ax[iv].invert_yaxis()
+    plt.suptitle(("Measurement date: %s\nWMO: %s") % (ts.to_pydatetime().strftime("%Y/%m/%d %H:%M"), wmo))
+    return fig
+
+def ensemble_profiles_one(dsub, i_obs, vname = "POTM"):
     """Plot ensemble profiles superimposed with observation profile
         vname = "POTM"
         vname = "PSAL"
@@ -47,7 +99,7 @@ def ensemble_profiles(dsub, i_obs, vname = "POTM"):
     ax.set_xlabel(("%s [%s]")%(dsub[vname_obs].attrs['long_name'],dsub[vname_obs].attrs['units']))
     ax.set_ylabel('Depth (m)')
     # plt.title(("N_OBS #%i") % (i_obs))
-    plt.title(("Measurement date: %s\nWMO: %s") % (ts.to_datetime().strftime("%Y/%m/%d %H:%M"), wmo))
+    plt.title(("Measurement date: %s\nWMO: %s") % (ts.to_pydatetime().strftime("%Y/%m/%d %H:%M"), wmo))
     return fig
 
 def ensemble_profile_pdf(dsub, i_obs, N=5, vname="POTM", dpi=80, hspace=-.35, obscolor='axis'):
@@ -155,6 +207,6 @@ def ensemble_profile_pdf(dsub, i_obs, N=5, vname="POTM", dpi=80, hspace=-.35, ob
     # Finish
     # g.fig.suptitle("Ensemble PDF")
     g.fig.suptitle(("%s\nMeasurement: %s\nWMO: %s") % (dsub[vname_pdf].attrs['long_name'],
-                                 ts.to_datetime().strftime("%Y/%m/%d %H:%M"), wmo))
+                                 ts.to_pydatetime().strftime("%Y/%m/%d %H:%M"), wmo))
 
     return g
