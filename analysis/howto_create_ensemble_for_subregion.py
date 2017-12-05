@@ -20,7 +20,7 @@ import pirate as pr
 
 # List member files for a single month:
 src_path = "../data/sample/OBS.y1993m01/"
-# src_path = "../data/OCCOBS/OBS.y2014m06/"
+src_path = "../data/OCCOBS/OBS.y2014m06/"
 flist = glob.glob(os.path.join(src_path + "ORCA025.L75-OCCITENS.*_enact_fdbk.nc"))
 print flist
 
