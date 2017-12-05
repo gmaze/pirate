@@ -21,7 +21,7 @@ flist = glob.glob(os.path.join(src_path + "ORCA025.L75-OCCITENS.*_enact_fdbk.nc"
 
 # Create and collect data of the ensemble:
 ens = pr.agg.ensemble(flist, lon=[-85, -50], lat=[20, 35])
-ds = ens.collect()
+ds = ens.collect() # This can take a while
 
 # Plots:
 i_obs = 1
